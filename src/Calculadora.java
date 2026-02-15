@@ -1,18 +1,14 @@
-/**
- * Clase Calculadora (Singleton).
- * Contiene la lógica para convertir expresiones y evaluarlas.
- * No guarda estado (memoria) de las operaciones, solo procesa.
- */
+//Convertir expresiones infix a postfix y evaluarlas.
+
 public class Calculadora {
 
-    // La unica instancia que existira de esta clase
     private static Calculadora instance;
 
-    // Constructor privado para evitar instanciacion externa
+    // Constructor privado para patrón Singleton
     private Calculadora() {
     }
 
-    // Obtener la unica instancia 
+    // Obtener la única instancia disponible
     public static Calculadora getInstance() {
         if (instance == null) {
             instance = new Calculadora();
@@ -21,46 +17,55 @@ public class Calculadora {
     }
 
     /**
-     * Convertir una expresion Infix (A + B) a Postfix (A B +).
-     * @param infix La expresion original.
-     * @return La expresion en postfix.
+     * Traducir notación Infix (humana) a Postfix (máquina).
      */
-    public String infixToPostfix(String infix) throws Exception {
+    public String infixToPostfix(String infix) throws CalculadoraException {
         StringBuilder postfix = new StringBuilder();
-        IStack<Character> stack = new StackVector<>(); // Usar Vector temporalmente para ordenamiento
+        IStack<Character> stack = new StackVector<>(); // Pila temporal para operadores
 
-        // Recorrer la cadena caracter por caracter
+        // Recorrer la expresión carácter por carácter
         for (int i = 0; i < infix.length(); i++) {
             char c = infix.charAt(i);
 
-            // Si es numero o letra, agregar directo a la salida
-            if (Character.isLetterOrDigit(c)) {
+            // Ignorar espacios en blanco
+            if (c == ' ') continue;
+
+            // Caso 1: Es un número
+            if (Character.isDigit(c)) {
                 postfix.append(c);
             } 
-            // Si es parentesis de apertura, guardar en la pila
+            // Caso 2: Paréntesis de apertura
             else if (c == '(') {
                 stack.push(c);
             } 
-            // Si es parentesis de cierre, extraer todo hasta encontrar el de apertura
+            // Caso 3: Paréntesis de cierre
             else if (c == ')') {
+                // Sacar elementos hasta encontrar el paréntesis de apertura
                 while (!stack.isEmpty() && stack.peek() != '(') {
                     postfix.append(stack.pop());
                 }
-                if (!stack.isEmpty()) stack.pop(); // Eliminar el '(' de la pila
+                if (!stack.isEmpty()) stack.pop(); // Eliminar el '('
             } 
-            // Si es un operador, manejar precedencia
+            // Caso 4: Operadores (+, -, *, /)
             else if (isOperator(c)) {
-                // Extraer operadores de la pila con mayor o igual precedencia
+                // Mover operadores de mayor prioridad de la pila a la salida
                 while (!stack.isEmpty() && precedence(c) <= precedence(stack.peek())) {
                     postfix.append(stack.pop());
                 }
                 stack.push(c);
+            } 
+            // Caso 5: Carácter desconocido
+            else {
+                // Lanzar excepción específica de caracter inválido
+                throw new CalculadoraException.CaracterInvalidoException(String.valueOf(c));
             }
         }
 
-        // Vaciar los operadores restantes en la pila
+        // Vaciar la pila de operadores restantes
         while (!stack.isEmpty()) {
-            if(stack.peek() == '(') throw new Exception("Error: Parentesis sin cerrar");
+            if(stack.peek() == '(') {
+                throw new CalculadoraException("Error: Paréntesis desbalanceados"); 
+            }
             postfix.append(stack.pop());
         }
 
@@ -68,24 +73,23 @@ public class Calculadora {
     }
 
     /**
-     * Evaluar una expresion Postfix y devolver el resultado.
-     * @param postfix La expresion en formato postfix.
-     * @param stack La pila seleccionada por el usuario (Factory).
-     * @return El resultado de la operacion.
+     * Evaluar la expresión Postfix.
+     * Realizar el cálculo matemático final usando la Pila seleccionada.
      */
-    public int evaluatePostfix(String postfix, IStack<Integer> stack) throws Exception {
+    public int evaluatePostfix(String postfix, IStack<Integer> stack) throws CalculadoraException {
         
         for (int i = 0; i < postfix.length(); i++) {
             char c = postfix.charAt(i);
 
-            // Si es digito, convertir y guardar en la pila
+            // Si es dígito, convertir a int y apilar
             if (Character.isDigit(c)) {
-                stack.push(c - '0'); // Convertir char a int
+                stack.push(c - '0');
             } 
-            // Si es operador, extraer dos operandos y calcular
+            // Si es operador, desapilar dos números y operar
             else if (isOperator(c)) {
+                // Verificar que existan al menos dos números en la pila
                 if (stack.size() < 2) {
-                    throw new Exception("Faltan operandos para el operador " + c);
+                    throw new CalculadoraException.OperandosInsuficientesException();
                 }
                 
                 int valB = stack.pop(); // Operando derecho
@@ -96,7 +100,8 @@ public class Calculadora {
                     case '-': stack.push(valA - valB); break;
                     case '*': stack.push(valA * valB); break;
                     case '/': 
-                        if (valB == 0) throw new Exception("Division por cero");
+                        // Verificar división por cero antes de operar
+                        if (valB == 0) throw new CalculadoraException.DivisionPorCeroException();
                         stack.push(valA / valB); 
                         break;
                     case '^': stack.push((int) Math.pow(valA, valB)); break;
@@ -104,14 +109,15 @@ public class Calculadora {
             }
         }
         
+        // Verificar que al final solo quede el resultado
         if (stack.size() != 1) {
-             throw new Exception("Expresion mal formada");
+             throw new CalculadoraException.OperandosInsuficientesException();
         }
 
         return stack.pop();
     }
 
-    // Definir jerarquia de operadores
+    // Definir jerarquía de operaciones
     private int precedence(char c) {
         switch (c) {
             case '+':
@@ -123,7 +129,7 @@ public class Calculadora {
         }
     }
 
-    // Verificar si es operador valido
+    // Validar si el caracter es un operador matemático
     private boolean isOperator(char c) {
         return c == '+' || c == '-' || c == '*' || c == '/' || c == '^';
     }
