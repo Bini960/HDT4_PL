@@ -16,9 +16,7 @@ public class Calculadora {
         return instance;
     }
 
-    /**
-     * Traducir notación Infix (humana) a Postfix (máquina).
-     */
+    //Traduce notación Infix (humana) a Postfix (máquina).
     public String infixToPostfix(String infix) throws CalculadoraException {
         StringBuilder postfix = new StringBuilder();
         IStack<Character> stack = new StackVector<>(); // Pila temporal para operadores
