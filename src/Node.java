@@ -1,8 +1,6 @@
 /**
- * Clase Nodo.
  * Representa un elemento individual de la lista que guarda un dato
  * y conoce a los datos siguientes y anteriores.
- * @param <T> Tipo de dato generico.
  */
 public class Node<T> {
 
@@ -18,7 +16,6 @@ public class Node<T> {
         this.prev = null; 
     }
 
-    // Getters y Setters
 
     // Retorna el dato guardado en el nodo
     public T getValue() {

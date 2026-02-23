@@ -52,9 +52,22 @@ public class Main {
 
         System.out.println("Usando implementación: " + type);
 
-        // Crear la pila usando el Factory
-        IStack<Integer> stack = factory.createStack(type);
-
+        // Declarar la variable para almacenar la pila
+        IStack<Integer> stack = null;
+        
+        // Evaluar la opción elegida por el usuario y solicitar la creación al Factory
+        if (type.equals("ARRAYLIST") || type.equals("VECTOR")) {
+            // Instanciar la pila nativa mandando nulo como segundo parámetro
+            stack = factory.createStack(type, null);
+        } 
+        else if (type.equals("SINGLY")) {
+            // Solicitar una estructura basada en listas e indicar el uso de una Lista Simple
+            stack = factory.createStack("LISTA", "SIMPLE");
+        } 
+        else if (type.equals("DOUBLY")) {
+            // Solicitar una estructura basada en listas e indicar el uso de una Lista Doble
+            stack = factory.createStack("LISTA", "DOBLE");
+        }
         // Leer el archivo datos.txt
         try (BufferedReader br = new BufferedReader(new FileReader("datos.txt"))) {
             String line;

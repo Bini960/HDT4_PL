@@ -1,5 +1,4 @@
 /**
- * Clase de Excepción Personalizada.
  * Agrupar los posibles errores lógicos de la calculadora.
  * Contiene subclases estáticas para errores específicos.
  */
@@ -10,7 +9,7 @@ public class CalculadoraException extends Exception {
         super(mensaje);
     }
 
-    // --- Subclases para errores específicos ---
+    // Subclases para errores específicos 
 
     // Error: Cuando se intenta dividir un número dentro de cero
     static class DivisionPorCeroException extends CalculadoraException {

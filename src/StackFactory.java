@@ -1,34 +1,35 @@
-/**
- * Se encarga de instanciar la Pila correcta según la elección del usuario.
- * @param <T> Tipo de dato a almacenar.
- */
 public class StackFactory<T> {
 
-    // Crea y devuelve una instancia de IStack segun el tipo solicitado
-    public IStack<T> createStack(String type) {
+    // Crear y devolver una instancia de IStack recibiendo dos parámetros (Según diseño UML)
+    public IStack<T> createStack(String type, String listType) {
         
-        // Normaliza el texto de entrada
+        // Normalizar el texto de entrada principal a mayúsculas
         String stackType = type.toUpperCase();
 
         switch (stackType) {
             case "ARRAYLIST":
-                // Retorna una pila basada en ArrayList 
+                // Retornar una pila basada en ArrayList 
                 return new StackArrayList<>();
 
             case "VECTOR":
-                // Retorna una pila basada en Vector 
+                // Retornar una pila basada en Vector 
                 return new StackVector<>();
 
-            case "SINGLY":
-                // Retorna una pila que usa internamente una Lista Simple
-                return new StackList<>(new SinglyLinkedList<>());
-
-            case "DOUBLY":
-                // Retorna una pila que usa internamente una Lista Doble
-                return new StackList<>(new DoublyLinkedList<>());
+            case "LISTA":
+                // Aplicar el patrón Factory nuevamente para decidir la implementación de la lista
+                // Normalizar el texto del tipo de lista (prevenir errores si el valor es nulo)
+                String tipoLista = (listType != null) ? listType.toUpperCase() : "SIMPLE";
+                
+                if (tipoLista.equals("DOBLE") || tipoLista.equals("DOUBLY")) {
+                    // Retornar una pila que usa internamente una Lista Doble
+                    return new StackList<>(new DoublyLinkedList<>());
+                } else {
+                    // Retornar una pila que usa internamente una Lista Simple por defecto
+                    return new StackList<>(new SinglyLinkedList<>());
+                }
 
             default:
-                // Retorna null si el tipo no es reconocido
+                // Retornar null si el tipo principal no es reconocido
                 return null;
         }
     }
